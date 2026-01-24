@@ -87,6 +87,24 @@ class HandCapture:
         cv2.destroyAllWindows()
 
 
+def normalize(landmarks):
+    """
+    Center on wrist + scale by hand size.
+    Expects landmarks as (21, 3) numpy array.
+    """
+    lm = landmarks.copy()
+    lm -= lm[0]  # center on wrist
+    
+    # distance to middle finger mcp (idx 9) or tip (idx 12)? 
+    # The snippet used 12 (Middle Finger Tip)
+    scale = np.linalg.norm(lm[12])  
+    
+    if scale > 0:
+        lm /= scale
+        
+    return lm
+
+
 if __name__ == "__main__":
     capture = HandCapture()
     capture.run_capture_loop()
