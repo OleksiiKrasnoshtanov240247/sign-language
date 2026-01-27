@@ -1,12 +1,22 @@
 import cv2
 import time
 import sys
+import os
 import torch
 from pathlib import Path
+
+# Fix import path to allow running this script directly
+# Add the project root (two levels up) to sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from src.backend.detector import SignDetector
 
 # Updated to the found model path
-CHECKPOINT_PATH = "CNN_model/best_model.pth"
+# Use relative path from project root or absolute path
+CHECKPOINT_PATH = os.path.join(project_root, "CNN_model", "best_model.pth")
 
 def run_app():
     print("Initializing Sign Language Detector...")
@@ -22,7 +32,12 @@ def run_app():
     else:
         print(f"Warning: Checkpoint not found at {CHECKPOINT_PATH}. Models will not verify signs.")
     
-    detector = SignDetector(static_model_path=ckpt_path, device=device)
+    try:
+        detector = SignDetector(static_model_path=ckpt_path, device=device)
+    except Exception as e:
+        print(f"Error initializing detector: {e}")
+        return
+
     cap = cv2.VideoCapture(0)
     
     if not cap.isOpened():
@@ -106,3 +121,6 @@ def run_app():
         cap.release()
         cv2.destroyAllWindows()
         print("Detector closed.")
+
+if __name__ == "__main__":
+    run_app()
