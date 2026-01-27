@@ -19,8 +19,8 @@ import time
 
 # Letters to record
 LETTERS = ['H', 'P', 'T', 'W']
-MODEL_PATH = "./hand_landmarker.task"
-OUTPUT_DIR = Path("./ngt_custom")
+MODEL_PATH = Path(__file__).parent / "hand_landmarker.task"
+OUTPUT_DIR = Path(__file__).parent / "ngt_custom"
 
 # MediaPipe drawing (for visualization)
 HAND_CONNECTIONS = [
