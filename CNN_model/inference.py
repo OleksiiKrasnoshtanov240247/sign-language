@@ -1,65 +1,81 @@
-import cv2
-import mediapipe as mp
 import torch
 import numpy as np
-from model import ASLClassifier
-import config
+from .model import ASLClassifier
+from . import config
 
-# Load Model & Labels
-classes = np.load(config.LABEL_ENCODER_PATH, allow_pickle=True)
-model = ASLClassifier(config.INPUT_SIZE, config.NUM_CLASSES).to(config.DEVICE)
-model.load_state_dict(torch.load(config.MODEL_SAVE_PATH, map_location=config.DEVICE))
-model.eval()
+class SignLanguagePredictor:
+    def __init__(self, model_path=None, device=None):
+        self.device = device if device else config.DEVICE
+        
+        # Load classes
+        # Assuming classes.npy is in the same folder as config or relative to it
+        # We might need absolute path if running from main.py
+        # But config.LABEL_ENCODER_PATH is just 'classes.npy'.
+        # Let's try to resolve it relative to config.py location
+        base_path = config.BASE_DIR if hasattr(config, 'BASE_DIR') else list(config.__file__.split('\\')[:-1])
+        if isinstance(base_path, list):
+             # minimal fallback if Path not used in user's config
+             import os
+             base_dir = os.path.dirname(config.__file__)
+             label_path = os.path.join(base_dir, config.LABEL_ENCODER_PATH)
+        else:
+             # If user config is simple and doesn't have BASE_DIR, construct it
+             import os
+             base_dir = os.path.dirname(config.__file__)
+             label_path = os.path.join(base_dir, config.LABEL_ENCODER_PATH)
 
-# MediaPipe Setup
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(
-    static_image_mode=False,
-    max_num_hands=1,
-    min_detection_confidence=0.7
-)
-mp_draw = mp.solutions.drawing_utils
+        try:
+            self.classes = np.load(label_path, allow_pickle=True)
+            print(f"Loaded classes: {self.classes}")
+        except FileNotFoundError:
+            print(f"Warning: classes.npy not found at {label_path}")
+            self.classes = []
 
-cap = cv2.VideoCapture(0)
+        # Initialize Model
+        self.model = ASLClassifier(config.INPUT_SIZE, config.NUM_CLASSES).to(self.device)
+        
+        # Load Weights
+        if model_path:
+             self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        else:
+             # Fallback to config path if not provided
+             ckpt_path = os.path.join(base_dir, config.MODEL_SAVE_PATH)
+             if os.path.exists(ckpt_path):
+                 self.model.load_state_dict(torch.load(ckpt_path, map_location=self.device))
+        
+        self.model.eval()
 
-while cap.isOpened():
-    success, frame = cap.read()
-    if not success:
-        break
-
-    frame = cv2.flip(frame, 1)
-    img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(img_rgb)
-
-    if results.multi_hand_landmarks:
-        for hand_lms in results.multi_hand_landmarks:
-            data_points = []
-            for lm in hand_lms.landmark:
-                data_points.extend([lm.x, lm.y, lm.z])
-
-            input_tensor = torch.tensor(data_points, dtype=torch.float32).to(config.DEVICE).unsqueeze(0)
-
-            with torch.no_grad():
-                output = model(input_tensor)
-                confidence = torch.softmax(output, dim=1).max().item()
-                prediction = classes[output.argmax(dim=1).item()]
-
-            mp_draw.draw_landmarks(frame, hand_lms, mp_hands.HAND_CONNECTIONS)
-
-            if confidence > config.CONFIDENCE_THRESHOLD:
-                cv2.putText(
-                    frame,
-                    f"{prediction} ({confidence:.2f})",
-                    (50, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0, 255, 0),
-                    2
-                )
-
-    cv2.imshow("NGT Real-time Recognition", frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+    def predict(self, landmarks):
+        """
+        Predict from landmarks.
+        Args:
+            landmarks: np.array of shape (21, 3) or (63,)
+        Returns:
+            dict with 'predicted_class', 'confidence', 'all_probabilities'
+        """
+        # Flatten if needed
+        if landmarks.ndim > 1:
+            data = landmarks.flatten()
+        else:
+            data = landmarks.copy()
+            
+        # Add batch dim
+        input_tensor = torch.tensor(data, dtype=torch.float32).to(self.device).unsqueeze(0)
+        
+        with torch.no_grad():
+            output = self.model(input_tensor)
+            probs = torch.softmax(output, dim=1)
+            confidence, idx = probs.max(dim=1)
+            
+            idx = idx.item()
+            confidence = confidence.item()
+            
+            predicted_class = self.classes[idx] if idx < len(self.classes) else "Unknown"
+            
+            all_probs = {self.classes[i]: probs[0][i].item() for i in range(len(self.classes))}
+            
+        return {
+            'predicted_class': predicted_class,
+            'confidence': confidence,
+            'all_probabilities': all_probs
+        }
