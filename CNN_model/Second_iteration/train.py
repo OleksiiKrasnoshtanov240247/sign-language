@@ -118,8 +118,8 @@ def print_per_class_accuracy(y_true, y_pred, label_encoder):
 
 
 def main():
-    CSV_PATH = "./ngt_frankenstein_final.csv"
-    OUTPUT_DIR = Path("./trained_models")
+    CSV_PATH = "ngt_final.csv"
+    OUTPUT_DIR = Path("trained_models")
     OUTPUT_DIR.mkdir(exist_ok=True)
     
     BATCH_SIZE = 512
