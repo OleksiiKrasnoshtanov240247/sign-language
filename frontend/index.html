@@ -11,18 +11,30 @@
         <header>
             <div class="header-content">
                 <div class="title-section">
-                    <h1>Sign Language Learning</h1>
-                    <p class="subtitle">Learn NGT alphabet with real-time feedback</p>
+                    <h1 data-i18n="title">Sign Language Learning</h1>
+                    <p class="subtitle" data-i18n="subtitle">Learn NGT alphabet with real-time feedback</p>
                 </div>
                 
                 <!-- Mode Toggle Switch -->
                 <div class="mode-switch-container" id="modeSwitchContainer">
-                    <span class="mode-label">Letter Order</span>
+                    <span class="mode-label" data-i18n="label-letter-order">Letter Order</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="modeCheckbox" disabled>
                         <span class="slider">
-                            <span class="slider-text left">ABC</span>
-                            <span class="slider-text right">Random</span>
+                            <span class="slider-text left" data-i18n="mode-abc">ABC</span>
+                            <span class="slider-text right" data-i18n="mode-random">Random</span>
+                        </span>
+                    </label>
+                </div>
+                
+                <!-- Language Toggle Switch -->
+                <div class="mode-switch-container" id="languageSwitchContainer">
+                    <span class="mode-label" data-i18n="label-language">Language</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="languageCheckbox">
+                        <span class="slider">
+                            <span class="slider-text left" data-i18n="lang-en">English</span>
+                            <span class="slider-text right" data-i18n="lang-nl">Nederlands</span>
                         </span>
                     </label>
                 </div>
@@ -32,22 +44,22 @@
         <div class="main-grid">
             <!-- Target Letter & Tutorial -->
             <div class="card target-card">
-                <h2>Target Letter</h2>
+                <h2 data-i18n="target-letter">Target Letter</h2>
                 <div class="target-letter" id="targetLetter">A</div>
                 
                 <!-- Tutorial GIF -->
                 <div class="tutorial-container">
                     <img id="tutorialGif" src="" alt="How to sign" style="display: none;">
-                    <p class="tutorial-hint">Watch the example above</p>
+                    <p class="tutorial-hint" data-i18n="watch-example">Watch the example above</p>
                 </div>
                 
                 <div class="instructions">
-                    <p><strong>Instructions:</strong></p>
+                    <p><strong data-i18n="instructions">Instructions:</strong></p>
                     <ol>
-                        <li>Watch the example GIF</li>
-                        <li>Position your hand in view</li>
-                        <li>Click "Record" button</li>
-                        <li>Hold the sign for 3 seconds</li>
+                        <li data-i18n="instr-1">Watch the example GIF</li>
+                        <li data-i18n="instr-2">Position your hand in view</li>
+                        <li data-i18n="instr-3">Click "Record" button</li>
+                        <li data-i18n="instr-4">Hold the sign for 3 seconds</li>
                     </ol>
                 </div>
             </div>
@@ -61,44 +73,44 @@
                     <!-- Status Badge -->
                     <div class="status-badge" id="statusBadge">
                         <span class="dot"></span>
-                        <span id="statusText">Not Connected</span>
+                        <span id="statusText" data-i18n="status-not-connected">Not Connected</span>
                     </div>
                     
                     <!-- Recording Progress -->
                     <div class="recording-progress" id="recordingProgress" style="display: none;">
-                        Recording: <span id="progressPercent">0%</span>
+                        <span data-i18n="recording">Recording</span>: <span id="progressPercent">0%</span>
                     </div>
                 </div>
                 
                 <div class="controls">
-                    <button id="startBtn" class="btn">Start Camera</button>
-                    <button id="recordBtn" class="btn btn-record" disabled>Record</button>
+                    <button id="startBtn" class="btn" data-i18n="btn-start">Start Camera</button>
+                    <button id="recordBtn" class="btn btn-record" disabled data-i18n="btn-record">Record</button>
                 </div>
             </div>
 
             <!-- Prediction & Stats -->
             <div class="card prediction-card">
-                <h2>Prediction</h2>
+                <h2 data-i18n="prediction">Prediction</h2>
                 <div class="prediction-letter" id="predictionLetter">-</div>
                 <div class="confidence" id="confidence">-</div>
                 
                 <div class="stats-section">
                     <div class="stat">
-                        <span class="stat-label">Correct</span>
+                        <span class="stat-label" data-i18n="stat-correct">Correct</span>
                         <span class="stat-value" id="correctCount">0</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-label">Attempts</span>
+                        <span class="stat-label" data-i18n="stat-attempts">Attempts</span>
                         <span class="stat-value" id="totalCount">0</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-label">Accuracy</span>
+                        <span class="stat-label" data-i18n="stat-accuracy">Accuracy</span>
                         <span class="stat-value" id="accuracy">0%</span>
                     </div>
                 </div>
                 
                 <div class="timer">
-                    <span class="timer-label">Time Remaining</span>
+                    <span class="timer-label" data-i18n="time-remaining">Time Remaining</span>
                     <span class="timer-value" id="timeDisplay">60s</span>
                 </div>
             </div>
@@ -111,14 +123,14 @@
 
         <!-- Success Message -->
         <div class="success-message" id="successMessage" style="display: none;">
-            <h2>✓ Correct!</h2>
-            <p>Moving to next letter...</p>
+            <h2 data-i18n="msg-correct-title">✓ Correct!</h2>
+            <p data-i18n="msg-correct-text">Moving to next letter...</p>
         </div>
 
         <!-- Timeout Message -->
         <div class="timeout-message" id="timeoutMessage" style="display: none;">
-            <h2>Time's up!</h2>
-            <p>Moving to next letter...</p>
+            <h2 data-i18n="msg-timeout-title">Time's up!</h2>
+            <p data-i18n="msg-timeout-text">Moving to next letter...</p>
         </div>
     </div>
 

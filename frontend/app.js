@@ -16,6 +16,7 @@ const statusText = document.getElementById('statusText');
 const startBtn = document.getElementById('startBtn');
 const recordBtn = document.getElementById('recordBtn');
 const modeCheckbox = document.getElementById('modeCheckbox');
+const languageCheckbox = document.getElementById('languageCheckbox');
 const tutorialGif = document.getElementById('tutorialGif');
 const correctCountElement = document.getElementById('correctCount');
 const totalCountElement = document.getElementById('totalCount');
@@ -29,6 +30,79 @@ const recordingProgress = document.getElementById('recordingProgress');
 
 // State
 let currentMode = 'sequential';  // Track current mode
+let currentLanguage = 'en';  // Track current language
+
+// Translations
+const translations = {
+    en: {
+        'title': 'Sign Language Learning',
+        'subtitle': 'Learn NGT alphabet with real-time feedback',
+        'label-letter-order': 'Letter Order',
+        'label-language': 'Language',
+        'mode-abc': 'ABC',
+        'mode-random': 'Random',
+        'lang-en': 'English',
+        'lang-nl': 'Nederlands',
+        'target-letter': 'Target Letter',
+        'watch-example': 'Watch the example above',
+        'instructions': 'Instructions:',
+        'instr-1': 'Watch the example GIF',
+        'instr-2': 'Position your hand in view',
+        'instr-3': 'Click "Record" button',
+        'instr-4': 'Hold the sign for 3 seconds',
+        'btn-start': 'Start Camera',
+        'btn-record': 'Record',
+        'btn-stop-record': 'Stop Recording',
+        'btn-running': 'Running',
+        'status-not-connected': 'Not Connected',
+        'status-connected': 'Connected',
+        'status-hand-detected': 'Hand Detected',
+        'recording': 'Recording',
+        'prediction': 'Prediction',
+        'stat-correct': 'Correct',
+        'stat-attempts': 'Attempts',
+        'stat-accuracy': 'Accuracy',
+        'time-remaining': 'Time Remaining',
+        'msg-correct-title': '✓ Correct!',
+        'msg-correct-text': 'Moving to next letter...',
+        'msg-timeout-title': 'Time\'s up!',
+        'msg-timeout-text': 'Moving to next letter...'
+    },
+    nl: {
+        'title': 'Gebarentaal Leren',
+        'subtitle': 'Leer het NGT alfabet met real-time feedback',
+        'label-letter-order': 'Letter Volgorde',
+        'label-language': 'Taal',
+        'mode-abc': 'ABC',
+        'mode-random': 'Willekeurig',
+        'lang-en': 'English',
+        'lang-nl': 'Nederlands',
+        'target-letter': 'Doelletter',
+        'watch-example': 'Bekijk het voorbeeld hierboven',
+        'instructions': 'Instructies:',
+        'instr-1': 'Bekijk de voorbeeld GIF',
+        'instr-2': 'Plaats je hand in beeld',
+        'instr-3': 'Klik op "Opnemen" knop',
+        'instr-4': 'Houd het teken 3 seconden vast',
+        'btn-start': 'Start Camera',
+        'btn-record': 'Opnemen',
+        'btn-stop-record': 'Stop Opname',
+        'btn-running': 'Actief',
+        'status-not-connected': 'Niet Verbonden',
+        'status-connected': 'Verbonden',
+        'status-hand-detected': 'Hand Gedetecteerd',
+        'recording': 'Opnemen',
+        'prediction': 'Voorspelling',
+        'stat-correct': 'Correct',
+        'stat-attempts': 'Pogingen',
+        'stat-accuracy': 'Nauwkeurigheid',
+        'time-remaining': 'Resterende Tijd',
+        'msg-correct-title': '✓ Correct!',
+        'msg-correct-text': 'Naar volgende letter...',
+        'msg-timeout-title': 'Tijd is op!',
+        'msg-timeout-text': 'Naar volgende letter...'
+    }
+};
 
 // Initialize
 function init() {
@@ -48,16 +122,54 @@ function init() {
         console.error('❌ modeCheckbox not found!');
     }
     
+    if (languageCheckbox) {
+        languageCheckbox.addEventListener('change', toggleLanguage);
+        console.log('✅ Language toggle event listener attached');
+    }
+    
     // Initially disable buttons
     recordBtn.disabled = true;
     if (modeCheckbox) {
         modeCheckbox.disabled = true;
     }
     
-    // Initialize mode display
+    // Initialize displays
     updateModeToggle();
+    updateLanguage();
     
     console.log('App initialized');
+}
+
+// Toggle language
+function toggleLanguage() {
+    currentLanguage = languageCheckbox.checked ? 'nl' : 'en';
+    console.log('🌍 Language changed to:', currentLanguage);
+    updateLanguage();
+}
+
+// Update all text elements to current language
+function updateLanguage() {
+    const lang = translations[currentLanguage];
+    
+    // Update all elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (lang[key]) {
+            element.textContent = lang[key];
+        }
+    });
+    
+    // Update dynamic button text if camera is running
+    if (startBtn.disabled) {
+        startBtn.textContent = lang['btn-running'];
+    }
+    
+    // Update record button based on recording state
+    if (isRecording) {
+        recordBtn.textContent = lang['btn-stop-record'];
+    } else {
+        recordBtn.textContent = lang['btn-record'];
+    }
 }
 
 // Connect to WebSocket
@@ -161,7 +273,7 @@ async function startSession() {
         startBtn.disabled = true;
         recordBtn.disabled = false;
         modeCheckbox.disabled = false;
-        startBtn.textContent = 'Running';
+        startBtn.textContent = translations[currentLanguage]['btn-running'];
         
         console.log('✅ Session started');
     } catch (error) {
@@ -187,7 +299,7 @@ function startRecording() {
     }
     
     isRecording = true;
-    recordBtn.textContent = 'Stop Recording';
+    recordBtn.textContent = translations[currentLanguage]['btn-stop-record'];
     recordBtn.classList.add('recording');
     
     // Hide messages
@@ -212,7 +324,7 @@ function startRecording() {
 // Stop recording
 function stopRecording() {
     isRecording = false;
-    recordBtn.textContent = 'Record';
+    recordBtn.textContent = translations[currentLanguage]['btn-record'];
     recordBtn.classList.remove('recording');
     
     // Hide recording progress
@@ -319,7 +431,7 @@ function handleServerResponse(data) {
         } else {
             // Recording finished
             isRecording = false;
-            recordBtn.textContent = 'Record';
+            recordBtn.textContent = translations[currentLanguage]['btn-record'];
             recordBtn.classList.remove('recording');
             
             if (recordingProgress) {
