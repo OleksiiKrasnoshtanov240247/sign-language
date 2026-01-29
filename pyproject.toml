@@ -15,4 +15,5 @@ dependencies = [
     "scikit-learn",
     "torch",
     "torchvision",
+    "tqdm>=4.67.1",
 ]
