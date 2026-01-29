@@ -16,7 +16,7 @@ LABEL_ENCODER_PATH = BASE_DIR / 'classes.npy'
 
 # Model Hyperparameters
 INPUT_SIZE = 63  # 21 landmarks * 3 coordinates (x, y, z)
-NUM_CLASSES = 24  # A-Z excluding J and Z (dynamic letters)
+NUM_CLASSES = 25  # A-Z excluding J and Z (24 letters) + Nonsense class = 25
 BATCH_SIZE = 64
 EPOCHS = 50
 LEARNING_RATE = 0.001

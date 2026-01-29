@@ -52,12 +52,13 @@ class DynamicSignPredictor:
     def _load_model(self):
         """Load trained LSTM model."""
         if not self.model_path.exists():
-            print(f" Dynamic model not found: {self.model_path}")
+            print(f"⚠ Dynamic model not found: {self.model_path}")
             print("   Dynamic letters (J, Z) will not work.")
             return
         
         try:
-            checkpoint = torch.load(self.model_path, map_location=self.device)
+            # Load with weights_only=False for compatibility
+            checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
             model_config = checkpoint.get('config', {})
             
             # Create model architecture

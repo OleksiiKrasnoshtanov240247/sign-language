@@ -179,7 +179,7 @@ async def websocket_endpoint(websocket: WebSocket):
     - Server -> Client: DetectionResponse
     """
     await websocket.accept()
-    print(" WebSocket connected")
+    print("✅ WebSocket connected")
     
     session = None
     is_dynamic = False
@@ -187,7 +187,12 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             # Receive message from client
-            data = await websocket.receive_json()
+            try:
+                data = await websocket.receive_json()
+            except Exception as e:
+                print(f"❌ Error receiving message: {e}")
+                break
+            
             message_type = data.get("type", "frame")
             
             # Get or create session
@@ -197,7 +202,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     session = session_manager.get_session(session_id)
                 if not session:
                     session = session_manager.create_session(session_id)
-                    print(f" New session: {session.id}")
+                    print(f"📝 New session: {session.id}")
                 
                 # Check if current letter is dynamic
                 is_dynamic = is_dynamic_letter(session.current_letter)
@@ -302,16 +307,20 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         if is_ready:
                             # Buffer full, make prediction
-                            pred_result = dynamic_predictor.predict()
+                            try:
+                                pred_result = dynamic_predictor.predict()
+                            except Exception as e:
+                                print(f"❌ Dynamic prediction error: {e}")
+                                pred_result = None
                             
                             if pred_result:
                                 # Add to session
                                 result = session.add_prediction(
-                                    pred_result['letter'],
+                                    pred_result['predicted_class'],
                                     pred_result['confidence']
                                 )
                                 
-                                # Finish recording
+                                # Finish recording if not already finished
                                 if not result:
                                     result = session.finish_recording()
                                 
@@ -322,8 +331,16 @@ async def websocket_endpoint(websocket: WebSocket):
                                     "session_id": session.id,
                                     "hand_detected": True,
                                     "recording": False,
-                                    "prediction": pred_result,
-                                    **result,
+                                    "prediction": {
+                                        "predicted_class": pred_result['predicted_class'],
+                                        "confidence": pred_result['confidence']
+                                    },
+                                    "match": result.get('match', False),
+                                    "success": result.get('success', False),
+                                    "timeout": result.get('timeout', False),
+                                    "message": result.get('message', ''),
+                                    "show_hint": result.get('show_hint', False),
+                                    "hint_message": result.get('hint_message', ''),
                                     "progress": session.get_progress()
                                 }
                                 await websocket.send_json(response)
@@ -354,7 +371,11 @@ async def websocket_endpoint(websocket: WebSocket):
                 else:
                     # Static letter - use CNN
                     if static_predictor:
-                        pred_result = static_predictor.predict(norm_landmarks)
+                        try:
+                            pred_result = static_predictor.predict(norm_landmarks)
+                        except Exception as e:
+                            print(f"❌ Static prediction error: {e}")
+                            continue
                         
                         # Add prediction to session
                         result = session.add_prediction(
@@ -374,7 +395,12 @@ async def websocket_endpoint(websocket: WebSocket):
                                     "predicted_class": pred_result['predicted_class'],
                                     "confidence": pred_result['confidence']
                                 },
-                                **result,
+                                "match": result.get('match', False),
+                                "success": result.get('success', False),
+                                "timeout": result.get('timeout', False),
+                                "message": result.get('message', ''),
+                                "show_hint": result.get('show_hint', False),
+                                "hint_message": result.get('hint_message', ''),
                                 "progress": session.get_progress()
                             }
                             await websocket.send_json(response)
@@ -403,15 +429,20 @@ async def websocket_endpoint(websocket: WebSocket):
                         session.is_recording = False
             
     except WebSocketDisconnect:
-        print(" WebSocket disconnected")
+        print("📡 WebSocket disconnected normally")
     except Exception as e:
-        print(f" WebSocket error: {e}")
+        print(f"❌ WebSocket error: {e}")
         import traceback
         traceback.print_exc()
         try:
-            await websocket.send_json({"error": str(e)})
-        except:
-            pass
+            error_response = {
+                "error": str(e),
+                "message": "Server error occurred",
+                "recording": False
+            }
+            await websocket.send_json(error_response)
+        except Exception as send_error:
+            print(f"Failed to send error message: {send_error}")
 
 
 # Mount static files after routes to avoid conflicts
