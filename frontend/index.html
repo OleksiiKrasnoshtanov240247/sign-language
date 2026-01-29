@@ -4,13 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Language Learning</title>
-    <link rel="stylesheet" href="/static/app.css">
+    <link rel="stylesheet" href="/static/app.css?v=2">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Sign Language Learning</h1>
-            <p class="subtitle">Learn NGT alphabet with real-time feedback</p>
+            <div class="header-content">
+                <div class="title-section">
+                    <h1>Sign Language Learning</h1>
+                    <p class="subtitle">Learn NGT alphabet with real-time feedback</p>
+                </div>
+                
+                <!-- Mode Toggle Switch -->
+                <div class="mode-switch-container" id="modeSwitchContainer">
+                    <span class="mode-label">Letter Order</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modeCheckbox" disabled>
+                        <span class="slider">
+                            <span class="slider-text left">ABC</span>
+                            <span class="slider-text right">Random</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
         </header>
 
         <div class="main-grid">
@@ -55,8 +71,8 @@
                 </div>
                 
                 <div class="controls">
-                    <button id="startBtn" class="btn">▶️ Start Camera</button>
-                    <button id="recordBtn" class="btn btn-record" disabled>🔴 Record</button>
+                    <button id="startBtn" class="btn">Start Camera</button>
+                    <button id="recordBtn" class="btn btn-record" disabled>Record</button>
                 </div>
             </div>
 
@@ -106,6 +122,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=2"></script>
 </body>
 </html>

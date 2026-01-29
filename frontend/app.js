@@ -15,6 +15,7 @@ const statusBadge = document.getElementById('statusBadge');
 const statusText = document.getElementById('statusText');
 const startBtn = document.getElementById('startBtn');
 const recordBtn = document.getElementById('recordBtn');
+const modeCheckbox = document.getElementById('modeCheckbox');
 const tutorialGif = document.getElementById('tutorialGif');
 const correctCountElement = document.getElementById('correctCount');
 const totalCountElement = document.getElementById('totalCount');
@@ -26,15 +27,35 @@ const successMessage = document.getElementById('successMessage');
 const timeoutMessage = document.getElementById('timeoutMessage');
 const recordingProgress = document.getElementById('recordingProgress');
 
+// State
+let currentMode = 'sequential';  // Track current mode
+
 // Initialize
 function init() {
     console.log('Initializing app...');
     
+    // Check if elements exist
+    console.log('modeCheckbox:', modeCheckbox);
+    console.log('Toggle container:', document.getElementById('modeSwitchContainer'));
+    
     startBtn.addEventListener('click', startSession);
     recordBtn.addEventListener('click', toggleRecording);
     
-    // Initially disable record button
+    if (modeCheckbox) {
+        modeCheckbox.addEventListener('change', toggleMode);
+        console.log('✅ Mode toggle event listener attached');
+    } else {
+        console.error('❌ modeCheckbox not found!');
+    }
+    
+    // Initially disable buttons
     recordBtn.disabled = true;
+    if (modeCheckbox) {
+        modeCheckbox.disabled = true;
+    }
+    
+    // Initialize mode display
+    updateModeToggle();
     
     console.log('App initialized');
 }
@@ -73,6 +94,54 @@ function connectWebSocket() {
     };
 }
 
+// Toggle letter order mode
+async function toggleMode() {
+    console.log('🔄 toggleMode called');
+    console.log('Session ID:', sessionId);
+    console.log('Checkbox state:', modeCheckbox.checked);
+    
+    if (!sessionId) {
+        console.error('No session ID');
+        modeCheckbox.checked = !modeCheckbox.checked; // Revert
+        return;
+    }
+    
+    // Determine new mode based on checkbox state
+    const newMode = modeCheckbox.checked ? 'random' : 'sequential';
+    
+    try {
+        const response = await fetch(`/api/session/${sessionId}/mode`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mode: newMode })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentMode = data.mode;
+            console.log(`✅ Mode changed to: ${currentMode}`);
+        } else {
+            console.error('Failed to change mode');
+            // Revert checkbox on failure
+            modeCheckbox.checked = !modeCheckbox.checked;
+        }
+    } catch (error) {
+        console.error('Error changing mode:', error);
+        // Revert checkbox on error
+        modeCheckbox.checked = !modeCheckbox.checked;
+    }
+}
+
+// Update mode toggle visual state
+function updateModeToggle() {
+    if (modeCheckbox) {
+        modeCheckbox.checked = (currentMode === 'random');
+        console.log('Mode toggle updated:', currentMode, 'checked:', modeCheckbox.checked);
+    }
+}
+
 // Start session
 async function startSession() {
     try {
@@ -91,6 +160,7 @@ async function startSession() {
         // Update UI
         startBtn.disabled = true;
         recordBtn.disabled = false;
+        modeCheckbox.disabled = false;
         startBtn.textContent = 'Running';
         
         console.log('✅ Session started');
@@ -117,7 +187,7 @@ function startRecording() {
     }
     
     isRecording = true;
-    recordBtn.textContent = '⏹️ Stop Recording';
+    recordBtn.textContent = 'Stop Recording';
     recordBtn.classList.add('recording');
     
     // Hide messages
@@ -142,7 +212,7 @@ function startRecording() {
 // Stop recording
 function stopRecording() {
     isRecording = false;
-    recordBtn.textContent = '🔴 Record';
+    recordBtn.textContent = 'Record';
     recordBtn.classList.remove('recording');
     
     // Hide recording progress
@@ -218,6 +288,12 @@ function handleServerResponse(data) {
             tutorialGif.src = prog.tutorial_url;
             tutorialGif.style.display = 'block';
         }
+        
+        // Update mode if provided
+        if (prog.mode && prog.mode !== currentMode) {
+            currentMode = prog.mode;
+            updateModeToggle();
+        }
     }
     
     // Update hand detection status
@@ -243,7 +319,7 @@ function handleServerResponse(data) {
         } else {
             // Recording finished
             isRecording = false;
-            recordBtn.textContent = '🔴 Record';
+            recordBtn.textContent = 'Record';
             recordBtn.classList.remove('recording');
             
             if (recordingProgress) {
@@ -255,12 +331,16 @@ function handleServerResponse(data) {
     // Update prediction
     if (data.prediction) {
         const pred = data.prediction;
-        predictionLetterElement.textContent = pred.predicted_class || pred.letter || '-';
+        const predictedClass = pred.predicted_class || pred.letter || '-';
+        // Replace "Nonsense" with a dash for better UI
+        const displayLetter = predictedClass === 'Nonsense' ? '–' : predictedClass;
+        predictionLetterElement.textContent = displayLetter;
         
         const conf = (pred.confidence * 100).toFixed(1);
         confidenceElement.textContent = `${conf}%`;
     } else if (data.current_prediction) {
-        predictionLetterElement.textContent = data.current_prediction;
+        const displayLetter = data.current_prediction === 'Nonsense' ? '–' : data.current_prediction;
+        predictionLetterElement.textContent = displayLetter;
         
         if (data.confidence) {
             const conf = (data.confidence * 100).toFixed(1);

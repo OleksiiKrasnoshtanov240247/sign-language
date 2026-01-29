@@ -42,6 +42,12 @@ class SessionInfo(BaseModel):
     total_attempts: int
     accuracy: float
     completed_letters: list
+    mode: str = "sequential"  # "sequential" or "random"
+
+
+class ModeChangeRequest(BaseModel):
+    """Request to change letter sequence mode."""
+    mode: str  # "sequential" or "random"
 
 
 class ErrorResponse(BaseModel):

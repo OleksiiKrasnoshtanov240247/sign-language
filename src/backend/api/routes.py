@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from typing import Dict
 
-from src.backend.api.schemas import DetectionResponse, SessionInfo, ErrorResponse
+from src.backend.api.schemas import DetectionResponse, SessionInfo, ErrorResponse, ModeChangeRequest
 from src.backend.core.session_manager import SessionManager
 from src.backend.core.config import STATIC_MODEL_PATH, DYNAMIC_MODEL_PATH, DYNAMIC_LETTERS
 from src.backend.detection import SignDetector
@@ -98,9 +98,9 @@ async def health_check():
 
 
 @app.post("/api/session/new", response_model=SessionInfo)
-async def create_session():
+async def create_session(mode: str = "sequential"):
     """Create a new learning session."""
-    session = session_manager.create_session()
+    session = session_manager.create_session(mode=mode)
     progress = session.get_progress()
     
     return SessionInfo(
@@ -109,7 +109,8 @@ async def create_session():
         total_correct=session.total_correct,
         total_attempts=session.total_attempts,
         accuracy=progress["accuracy"],
-        completed_letters=session.completed_letters
+        completed_letters=session.completed_letters,
+        mode=session.mode
     )
 
 
@@ -127,8 +128,27 @@ async def get_session_info(session_id: str):
         total_correct=session.total_correct,
         total_attempts=session.total_attempts,
         accuracy=progress["accuracy"],
-        completed_letters=session.completed_letters
+        completed_letters=session.completed_letters,
+        mode=session.mode
     )
+
+
+@app.post("/api/session/{session_id}/mode")
+async def change_mode(session_id: str, request: ModeChangeRequest):
+    """Change letter sequence mode for a session."""
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    try:
+        session.set_mode(request.mode)
+        return {
+            "status": "success",
+            "mode": session.mode,
+            "message": f"Mode changed to {request.mode}"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.delete("/api/session/{session_id}")

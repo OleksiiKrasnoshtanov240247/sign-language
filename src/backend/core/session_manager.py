@@ -20,10 +20,11 @@ from src.backend.core.tutorial_manager import TutorialManager
 class UserSession:
     """Manages state for a single user learning session."""
     
-    def __init__(self, session_id: Optional[str] = None):
+    def __init__(self, session_id: Optional[str] = None, mode: str = "sequential"):
         """Initialize new session."""
         self.id = session_id or str(uuid.uuid4())
-        self.letter_sequence = LetterSequence(mode="sequential", include_dynamic=True)
+        self.mode = mode  # "sequential" or "random"
+        self.letter_sequence = LetterSequence(mode=mode, include_dynamic=True)
         self.tutorial_manager = TutorialManager()
         
         # Current state
@@ -234,8 +235,18 @@ class UserSession:
             'attempt_count': self.attempt_count,
             'time_remaining': self.get_time_remaining(),
             'tutorial_url': self.get_tutorial_url(),
-            'is_recording': self.is_recording
+            'is_recording': self.is_recording,
+            'mode': self.mode
         }
+    
+    def set_mode(self, mode: str):
+        """Change letter sequence mode (sequential or random)."""
+        if mode not in ["sequential", "random"]:
+            raise ValueError(f"Invalid mode: {mode}. Must be 'sequential' or 'random'.")
+        
+        self.mode = mode
+        self.letter_sequence.mode = mode
+        print(f"📝 Mode changed to: {mode}")
     
     def reset(self):
         """Reset session to beginning."""
@@ -258,9 +269,9 @@ class SessionManager:
     def __init__(self):
         self.sessions: Dict[str, UserSession] = {}
     
-    def create_session(self, session_id: Optional[str] = None) -> UserSession:
+    def create_session(self, session_id: Optional[str] = None, mode: str = "sequential") -> UserSession:
         """Create new user session."""
-        session = UserSession(session_id)
+        session = UserSession(session_id, mode=mode)
         self.sessions[session.id] = session
         return session
     
