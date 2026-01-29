@@ -12,7 +12,12 @@ dependencies = [
     "numpy",
     "opencv-python",
     "pandas",
+    "pydantic>=2.12.5",
+    "python-multipart>=0.0.22",
+    "requests>=2.32.5",
     "scikit-learn",
     "torch",
     "torchvision",
+    "uvicorn>=0.40.0",
+    "websockets>=16.0",
 ]

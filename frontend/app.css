@@ -1,0 +1,389 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #000;
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #333;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 1.1em;
+    color: #888;
+}
+
+/* Main Grid */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Card */
+.card {
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.card h2 {
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Target Card */
+.target-letter {
+    font-size: 10em;
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    margin: 30px 0;
+    line-height: 1;
+}
+
+.progress-indicator {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.match-dots {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.match-dots .dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid #555;
+}
+
+.match-dots .dot.active {
+    background: #fff;
+    border-color: #fff;
+}
+
+.match-text {
+    color: #888;
+    font-size: 0.9em;
+}
+
+/* Video Card */
+.video-container {
+    position: relative;
+    background: #000;
+    border: 2px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+}
+
+#webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+.status-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #555;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.status-badge .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #666;
+}
+
+.status-badge.connected .dot {
+    background: #fff;
+}
+
+.status-badge.hand-detected .dot {
+    background: #fff;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: 600;
+    border: 2px solid #fff;
+    background: transparent;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+    background: #fff;
+    color: #000;
+}
+
+.btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: #555;
+    color: #555;
+}
+
+.btn-stop {
+    border-color: #888;
+    color: #888;
+}
+
+.btn-stop:hover:not(:disabled) {
+    background: #888;
+    color: #000;
+}
+
+/* Prediction Card */
+.prediction-letter {
+    font-size: 8em;
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    margin: 20px 0;
+    line-height: 1;
+}
+
+.confidence {
+    text-align: center;
+    font-size: 1.1em;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.stats-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.stat-label {
+    color: #888;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: #fff;
+}
+
+.timer {
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #888;
+}
+
+/* Messages */
+.hint-message,
+.success-message,
+.timeout-message {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111;
+    border: 2px solid #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.hint-message {
+    border-color: #888;
+    max-width: 500px;
+}
+
+.success-message {
+    border-color: #fff;
+}
+
+.success-message h2,
+.timeout-message h2 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.timeout-message {
+    border-color: #666;
+}
+
+/* Tutorial */
+.tutorial-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+#tutorialGif {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #333;
+}
+
+.tutorial-hint {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #888;
+}
+
+.instructions {
+    margin-top: 20px;
+    text-align: left;
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.instructions ol {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.instructions li {
+    margin: 5px 0;
+}
+
+/* Recording Progress */
+.recording-progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 10px;
+    font-size: 1.5em;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
+
+/* Record Button Styles */
+.btn-record {
+    background: #ff4444 !important;
+    border-color: #ff4444 !important;
+    color: white !important;
+}
+
+.btn-record:hover:not(:disabled) {
+    background: #ff0000 !important;
+    border-color: #ff0000 !important;
+}
+
+.btn-record.recording {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .target-letter {
+        font-size: 8em;
+    }
+    
+    .prediction-letter {
+        font-size: 6em;
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2em;
+    }
+    
+    .target-letter {
+        font-size: 6em;
+    }
+    
+    .prediction-letter {
+        font-size: 5em;
+    }
+}
