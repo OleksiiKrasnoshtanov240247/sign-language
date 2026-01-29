@@ -24,7 +24,7 @@ PHOTOS_DIR = Path("letters")
 INPUT_CSV = "ngt_data.csv"
 OUTPUT_CSV = "ngt_final.csv"
 
-LETTERS_TO_REPLACE = ['D', 'F', 'G', 'S', 'V']  # Replace these with your photos
+LETTERS_TO_REPLACE = ['D', 'F', 'G', 'S', 'V', 'X']  # Replace these with your photos
 CLASSES_TO_ADD = ['Nonsense']  # Add these as new classes (25th class)
 AUGMENT_MULTIPLIER = 10
 

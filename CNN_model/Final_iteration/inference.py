@@ -109,7 +109,6 @@ def main():
         min_detection_confidence=0.7,
         min_tracking_confidence=0.5
     )
-    mp_drawing = mp.solutions.drawing_utils
     mp_hands = mp.solutions.hands
 
     smoother = PredictionSmoother(window_size=SMOOTHING_WINDOW)
@@ -125,11 +124,12 @@ def main():
 
     print("\n" + "=" * 60)
     print("CONTROLS:")
-    print("  Q - Quit")
+    print("  ESC - Quit")
     print("  R - Reset smoothing buffer")
     print("  S - Save current frame and landmarks (for debugging)")
     print("=" * 60)
-    print("\nStarting inference...\n")
+    print("\nMIRROR MODE: Right hand appears on right side")
+    print("Starting inference...\n")
 
     frame_count = 0
 
@@ -138,8 +138,12 @@ def main():
         if not ret:
             break
 
+        # Process UNFLIPPED frame with MediaPipe (matches training data)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = hands.process(rgb_frame)
+
+        # Flip frame for mirror display (AFTER MediaPipe processing)
+        frame = cv2.flip(frame, 1)
 
         if results.multi_hand_landmarks:
             hand_landmarks = results.multi_hand_landmarks[0]
@@ -150,11 +154,22 @@ def main():
             if frames_with_hand >= MIN_FRAMES_BEFORE_PREDICT:
                 in_recognition_phase = True
 
-            mp_drawing.draw_landmarks(
-                frame,
-                hand_landmarks,
-                mp_hands.HAND_CONNECTIONS
-            )
+            # Draw landmarks with mirrored coordinates on flipped frame
+            h, w, _ = frame.shape
+
+            for connection in mp_hands.HAND_CONNECTIONS:
+                start_lm = hand_landmarks.landmark[connection[0]]
+                end_lm = hand_landmarks.landmark[connection[1]]
+
+                start_px = (int((1 - start_lm.x) * w), int(start_lm.y * h))
+                end_px = (int((1 - end_lm.x) * w), int(end_lm.y * h))
+
+                cv2.line(frame, start_px, end_px, (0, 255, 0), 2)
+
+            for landmark in hand_landmarks.landmark:
+                cx = int((1 - landmark.x) * w)
+                cy = int(landmark.y * h)
+                cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
 
             if not in_recognition_phase:
                 progress_pct = int(100 * frames_with_hand / MIN_FRAMES_BEFORE_PREDICT)
@@ -245,14 +260,14 @@ def main():
         cv2.imshow('NGT Sign Language Recognition', frame)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
+        if key == 27:  # ESC key
             break
         elif key == ord('r'):
             smoother.reset()
             frames_with_hand = 0
             in_recognition_phase = False
             print("Reset: smoothing buffer + recognition phase")
-        elif key == ord('s') and results.multi_hand_landmarks:
+        elif key == ord('s') and results.multi_hand_landmarks and in_recognition_phase:
             import time
             timestamp = int(time.time())
             cv2.imwrite(f"debug_frame_{timestamp}.png", frame)
