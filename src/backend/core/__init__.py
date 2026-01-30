@@ -1,5 +1,5 @@
-"""
-Core business logic for sign language learning application.
+"""Core business logic for sign language learning application.
+
 Session management, tutorial logic, and progress tracking.
 """
 from src.backend.core.session_manager import SessionManager, UserSession
