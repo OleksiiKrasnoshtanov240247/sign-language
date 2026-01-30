@@ -9,30 +9,36 @@ body {
     background: #000;
     color: #fff;
     min-height: 100vh;
-    padding: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 2200px;
     margin: 0 auto;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header */
 header {
     text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
     border-bottom: 2px solid #333;
 }
 
 header h1 {
-    font-size: 2.5em;
-    margin-bottom: 10px;
+    font-size: clamp(1.8em, 3vw, 2.5em);
+    margin-bottom: 8px;
     font-weight: 700;
 }
 
 .subtitle {
-    font-size: 1.1em;
+    font-size: clamp(0.9em, 1.5vw, 1.1em);
     color: #888;
 }
 
@@ -154,8 +160,8 @@ header h1 {
 .main-grid {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 15px;
+    align-items: stretch;
 }
 
 /* Card */
@@ -163,12 +169,12 @@ header h1 {
     background: #111;
     border: 2px solid #333;
     border-radius: 8px;
-    padding: 25px;
+    padding: 20px;
 }
 
 .card h2 {
-    font-size: 1.3em;
-    margin-bottom: 20px;
+    font-size: clamp(1.1em, 1.8vw, 1.4em);
+    margin-bottom: 15px;
     text-align: center;
     color: #fff;
     font-weight: 600;
@@ -176,11 +182,11 @@ header h1 {
 
 /* Target Card */
 .target-letter {
-    font-size: 10em;
+    font-size: clamp(6em, 12vw, 14em);
     font-weight: 700;
     text-align: center;
     color: #fff;
-    margin: 30px 0;
+    margin: 20px 0;
     line-height: 1;
 }
 
@@ -275,8 +281,8 @@ header h1 {
 
 .btn {
     flex: 1;
-    padding: 12px;
-    font-size: 1em;
+    padding: clamp(10px, 1.5vh, 14px);
+    font-size: clamp(0.9em, 1.2vw, 1.05em);
     font-weight: 600;
     border: 2px solid #fff;
     background: transparent;
@@ -310,11 +316,11 @@ header h1 {
 
 /* Prediction Card */
 .prediction-letter {
-    font-size: 8em;
+    font-size: clamp(5em, 10vw, 11em);
     font-weight: 700;
     text-align: center;
     color: #fff;
-    margin: 20px 0;
+    margin: 15px 0;
     line-height: 1;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -326,7 +332,7 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 140px;
+    min-height: clamp(100px, 15vh, 140px);
 }
 
 .confidence {
@@ -339,17 +345,18 @@ header h1 {
 .stats-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin: 20px 0;
+    gap: 10px;
+    margin: 15px 0;
 }
 
 .stat {
     display: flex;
     justify-content: space-between;
-    padding: 12px;
+    padding: 10px 12px;
     background: #000;
     border: 1px solid #333;
     border-radius: 4px;
+    font-size: clamp(0.9em, 1.2vw, 1em);
 }
 
 .stat-label {
@@ -490,19 +497,20 @@ header h1 {
 }
 
 .instructions {
-    margin-top: 20px;
+    margin-top: 15px;
     text-align: left;
-    font-size: 0.9em;
+    font-size: clamp(0.8em, 1.2vw, 0.9em);
     color: #aaa;
 }
 
 .instructions ol {
     margin-left: 20px;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .instructions li {
-    margin: 5px 0;
+    margin: 4px 0;
+    line-height: 1.4;
 }
 
 /* Recording Progress */
