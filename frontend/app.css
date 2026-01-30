@@ -54,6 +54,7 @@ header h1 {
 .title-section {
     flex: 1;
     min-width: 300px;
+    text-align: center;
 }
 
 /* Mode Toggle Switch */
@@ -519,14 +520,14 @@ header h1 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.5);
     color: white;
-    border: 2px solid white;
-    padding: 20px 40px;
-    border-radius: 10px;
-    font-size: 1.5em;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.2em;
     font-weight: bold;
-    animation: pulse 1s infinite;
+    pointer-events: none;
 }
 
 /* Record Button Styles */

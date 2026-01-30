@@ -31,6 +31,7 @@ const recordingProgress = document.getElementById('recordingProgress');
 // State
 let currentMode = 'sequential';  // Track current mode
 let currentLanguage = 'en';  // Track current language
+let currentTutorialUrl = null;  // Track current tutorial URL to prevent GIF restart
 
 // Translations
 const translations = {
@@ -395,8 +396,9 @@ function handleServerResponse(data) {
             timeDisplay.textContent = Math.ceil(prog.time_remaining) + 's';
         }
         
-        // Update tutorial GIF
-        if (prog.tutorial_url) {
+        // Update tutorial GIF (only if URL changed to prevent restart)
+        if (prog.tutorial_url && prog.tutorial_url !== currentTutorialUrl) {
+            currentTutorialUrl = prog.tutorial_url;
             tutorialGif.src = prog.tutorial_url;
             tutorialGif.style.display = 'block';
         }
@@ -423,10 +425,19 @@ function handleServerResponse(data) {
             const message = data.message || 'Recording...';
             statusText.textContent = message;
             
-            // Show buffer progress for dynamic letters
-            if (data.buffer_progress !== undefined && recordingProgress) {
+            // Show recording overlay
+            if (recordingProgress) {
+                recordingProgress.style.display = 'block';
+            }
+            
+            // Update buffer progress (for dynamic letters)
+            const progressPercent = document.getElementById('progressPercent');
+            if (data.buffer_progress !== undefined && progressPercent) {
                 const pct = (data.buffer_progress * 100).toFixed(0);
-                recordingProgress.textContent = `${pct}%`;
+                progressPercent.textContent = ` ${pct}%`;
+            } else if (progressPercent) {
+                // For static letters, just show recording without percentage
+                progressPercent.textContent = '';
             }
         } else {
             // Recording finished

@@ -57,7 +57,9 @@ class LetterSequence:
         candidates = [l for l in self.available_letters if l != current_letter]
         if not candidates:
             candidates = self.available_letters
-        return random.choice(candidates)
+        choice = random.choice(candidates)
+        print(f"🎲 Random mode: selected '{choice}' from {len(candidates)} candidates (avoiding '{current_letter}')")
+        return choice
     
     def mark_completed(self, letter: str):
         """Mark a letter as successfully completed."""

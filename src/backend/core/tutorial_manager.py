@@ -35,7 +35,7 @@ class TutorialManager:
     def get_tutorial_url(self, letter: str) -> Optional[str]:
         """Get relative URL for tutorial GIF."""
         if self.has_tutorial(letter):
-            return f"/assets/letter_gifs/{letter.upper()}.gif"
+            return f"/assets/{letter.upper()}.gif"
         return None
     
     def should_show_hint(self, attempt_count: int, hints_shown: int, max_hints: int) -> bool:

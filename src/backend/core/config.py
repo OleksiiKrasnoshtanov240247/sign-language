@@ -9,7 +9,7 @@ MODELS_DIR = PROJECT_ROOT / "models"
 STATIC_MODEL_DIR = MODELS_DIR / "static"
 DYNAMIC_MODEL_DIR = MODELS_DIR / "dynamic"
 ASSETS_DIR = PROJECT_ROOT / "src" / "assets"
-LETTER_GIFS_DIR = ASSETS_DIR / "letter_gifs"
+LETTER_GIFS_DIR = ASSETS_DIR  # GIFs are directly in assets folder
 
 # Model paths
 STATIC_MODEL_PATH = STATIC_MODEL_DIR / "best_model.pth"
