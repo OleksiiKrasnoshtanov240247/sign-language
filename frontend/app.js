@@ -15,6 +15,7 @@ const statusBadge = document.getElementById('statusBadge');
 const statusText = document.getElementById('statusText');
 const startBtn = document.getElementById('startBtn');
 const recordBtn = document.getElementById('recordBtn');
+const skipBtn = document.getElementById('skipBtn');
 const modeCheckbox = document.getElementById('modeCheckbox');
 const languageCheckbox = document.getElementById('languageCheckbox');
 const tutorialGif = document.getElementById('tutorialGif');
@@ -54,6 +55,7 @@ const translations = {
         'btn-start': 'Start Camera',
         'btn-record': 'Record',
         'btn-stop-record': 'Stop Recording',
+        'btn-skip': 'Skip Letter',
         'btn-running': 'Running',
         'status-not-connected': 'Not Connected',
         'status-connected': 'Connected',
@@ -88,6 +90,7 @@ const translations = {
         'btn-start': 'Start Camera',
         'btn-record': 'Opnemen',
         'btn-stop-record': 'Stop Opname',
+        'btn-skip': 'Letter Overslaan',
         'btn-running': 'Actief',
         'status-not-connected': 'Niet Verbonden',
         'status-connected': 'Verbonden',
@@ -115,6 +118,7 @@ function init() {
     
     startBtn.addEventListener('click', startSession);
     recordBtn.addEventListener('click', toggleRecording);
+    skipBtn.addEventListener('click', skipLetter);
     
     if (modeCheckbox) {
         modeCheckbox.addEventListener('change', toggleMode);
@@ -255,6 +259,27 @@ function updateModeToggle() {
     }
 }
 
+// Skip current letter and move to next one
+function skipLetter() {
+    if (!sessionId || !ws || ws.readyState !== WebSocket.OPEN) {
+        console.error('Cannot skip: no active session or WebSocket not connected');
+        return;
+    }
+    
+    console.log('⏭️ Skipping letter:', targetLetterElement.textContent);
+    
+    // If recording, stop it first
+    if (isRecording) {
+        stopRecording();
+    }
+    
+    // Send skip command
+    ws.send(JSON.stringify({
+        type: 'skip',
+        session_id: sessionId
+    }));
+}
+
 // Start session
 async function startSession() {
     try {
@@ -273,6 +298,7 @@ async function startSession() {
         // Update UI
         startBtn.disabled = true;
         recordBtn.disabled = false;
+        skipBtn.disabled = false;
         modeCheckbox.disabled = false;
         startBtn.textContent = translations[currentLanguage]['btn-running'];
         
@@ -384,6 +410,7 @@ function handleServerResponse(data) {
     // Update progress
     if (data.progress) {
         const prog = data.progress;
+        console.log('📊 Progress update:', prog);
         targetLetterElement.textContent = prog.current_letter || data.current_letter;
         correctCountElement.textContent = prog.total_correct || 0;
         totalCountElement.textContent = prog.total_attempts || 0;
@@ -401,6 +428,10 @@ function handleServerResponse(data) {
             currentTutorialUrl = prog.tutorial_url;
             tutorialGif.src = prog.tutorial_url;
             tutorialGif.style.display = 'block';
+        } else if (!prog.tutorial_url && currentTutorialUrl !== null) {
+            // Hide GIF if no tutorial available for this letter
+            currentTutorialUrl = null;
+            tutorialGif.style.display = 'none';
         }
         
         // Update mode if provided
@@ -479,6 +510,16 @@ function handleServerResponse(data) {
     // Handle timeout
     if (data.timeout) {
         showTimeout();
+    }
+    
+    // Handle skip (optional: show a brief message)
+    if (data.skipped) {
+        console.log('⏭️ Letter skipped:', data.message);
+        // Clear prediction display when skipping
+        predictionLetterElement.textContent = '-';
+        confidenceElement.textContent = '-';
+        // Optionally show a brief notification
+        // showSkipped();
     }
     
     // Handle hints

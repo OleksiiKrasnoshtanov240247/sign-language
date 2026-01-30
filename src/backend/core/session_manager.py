@@ -248,6 +248,39 @@ class UserSession:
         self.letter_sequence.mode = mode
         print(f"📝 Mode changed to: {mode}")
     
+    def skip_letter(self) -> Dict:
+        """
+        Skip the current letter and move to the next one.
+        
+        Returns:
+            Dict with skip result information
+        """
+        skipped_letter = self.current_letter
+        
+        # Move to next letter
+        self.current_letter = self.letter_sequence.get_next_letter(self.current_letter)
+        self.letter_start_time = time.time()
+        self.attempt_count = 0
+        self.hints_shown = 0
+        self.is_recording = False
+        self.recording_predictions = []
+        self.show_hint = False
+        
+        # Mark as attempt (not counted as correct)
+        self.total_attempts += 1
+        
+        print(f"⏭️ Skipped letter '{skipped_letter}' -> '{self.current_letter}'")
+        
+        return {
+            "match": False,
+            "success": False,
+            "timeout": False,
+            "skipped": True,
+            "message": f"Skipped {skipped_letter}, now showing {self.current_letter}",
+            "next_letter": self.current_letter,
+            "show_hint": False
+        }
+    
     def reset(self):
         """Reset session to beginning."""
         self.letter_sequence.reset()

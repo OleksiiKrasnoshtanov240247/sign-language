@@ -315,6 +315,16 @@ header h1 {
     color: #000;
 }
 
+.btn-skip {
+    border-color: #FFA500;
+    color: #FFA500;
+}
+
+.btn-skip:hover:not(:disabled) {
+    background: #FFA500;
+    color: #000;
+}
+
 /* Prediction Card */
 .prediction-letter {
     font-size: clamp(5em, 10vw, 11em);

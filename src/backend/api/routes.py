@@ -263,6 +263,40 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json(response)
                 continue
             
+            elif message_type == "skip":
+                # Skip current letter and move to next one
+                print(f"⏭️ Skipping letter: {session.current_letter}")
+                
+                # Stop recording if active
+                if session.is_recording:
+                    session.is_recording = False
+                    if is_dynamic and dynamic_predictor:
+                        dynamic_predictor.stop_collecting()
+                        dynamic_predictor.clear_buffer()
+                
+                # Skip to next letter
+                result = session.skip_letter()
+                
+                # Update is_dynamic flag for new letter
+                is_dynamic = is_dynamic_letter(session.current_letter)
+                
+                # Send response with new letter - same structure as timeout/success
+                response = {
+                    "session_id": session.id,
+                    "hand_detected": False,
+                    "recording": False,
+                    "match": result.get('match', False),
+                    "success": result.get('success', False),
+                    "timeout": result.get('timeout', False),
+                    "skipped": result.get('skipped', True),
+                    "show_hint": result.get('show_hint', False),
+                    "hint_message": result.get('hint_message', ''),
+                    "message": result.get("message", "Letter skipped"),
+                    "progress": session.get_progress()
+                }
+                await websocket.send_json(response)
+                continue
+            
             elif message_type == "frame":
                 # Process frame
                 frame_base64 = data.get("frame")
