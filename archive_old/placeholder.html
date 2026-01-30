@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Recognition</title>
+    <link rel="stylesheet" href="placeholder.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sign Language Recognition</h1>
+            <p class="subtitle">Show the target letter with your hand</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Target Letter Display -->
+            <div class="target-section">
+                <div class="card">
+                    <h2>Target Letter</h2>
+                    <div class="target-letter" id="targetLetter">A</div>
+                    <button class="btn btn-primary" id="nextLetterBtn">Next Letter</button>
+                </div>
+            </div>
+
+            <!-- Video Feed -->
+            <div class="video-section">
+                <div class="card">
+                    <div class="video-container">
+                        <video id="webcam" autoplay playsinline></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div class="status-indicator" id="statusIndicator">
+                            <span class="status-dot"></span>
+                            <span id="statusText">Initializing...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction Display -->
+            <div class="prediction-section">
+                <div class="card">
+                    <h2>Prediction</h2>
+                    <div class="prediction-letter" id="predictionLetter">-</div>
+                    <div class="confidence" id="confidence">Confidence: --</div>
+                    <div class="match-indicator" id="matchIndicator"></div>
+                </div>
+
+                <div class="card stats-card">
+                    <h3>Session Stats</h3>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Correct:</span>
+                            <span class="stat-value" id="correctCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value" id="totalCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Accuracy:</span>
+                            <span class="stat-value" id="accuracy">--%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-success" id="startBtn">Start</button>
+            <button class="btn btn-danger" id="stopBtn" disabled>Stop</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset Stats</button>
+        </div>
+    </div>
+
+    <script src="placeholder.js"></script>
+</body>
+</html>

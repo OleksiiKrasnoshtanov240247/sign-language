@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Learning</title>
+    <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sign Language Learning</h1>
+            <p class="subtitle">Practice ASL alphabet recognition</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Target Letter -->
+            <div class="card target-card">
+                <h2>Target Letter</h2>
+                <div class="target-letter" id="targetLetter">A</div>
+                <div class="progress-indicator">
+                    <div class="match-dots" id="matchDots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                    <p class="match-text">Hold for 3 matches</p>
+                </div>
+            </div>
+
+            <!-- Video Feed -->
+            <div class="card video-card">
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="status-badge" id="statusBadge">
+                        <span class="dot"></span>
+                        <span id="statusText">Connecting...</span>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-start" id="startBtn">Start</button>
+                    <button class="btn btn-stop" id="stopBtn" disabled>Stop</button>
+                </div>
+            </div>
+
+            <!-- Prediction & Stats -->
+            <div class="card prediction-card">
+                <h2>Prediction</h2>
+                <div class="prediction-letter" id="predictionLetter">-</div>
+                <div class="confidence" id="confidence">-</div>
+                
+                <div class="stats-section">
+                    <div class="stat">
+                        <span class="stat-label">Correct</span>
+                        <span class="stat-value" id="correctCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Attempts</span>
+                        <span class="stat-value" id="totalCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Accuracy</span>
+                        <span class="stat-value" id="accuracy">0%</span>
+                    </div>
+                </div>
+                
+                <div class="timer">
+                    <span>Time: </span>
+                    <span id="timeDisplay">0s / 45s</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hint Message -->
+        <div class="hint-message" id="hintMessage" style="display: none;">
+            <span id="hintText"></span>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage" style="display: none;">
+            <h2>✓ Correct!</h2>
+            <p>Moving to next letter...</p>
+        </div>
+
+        <!-- Timeout Message -->
+        <div class="timeout-message" id="timeoutMessage" style="display: none;">
+            <h2>Time's up!</h2>
+            <p>Moving to next letter...</p>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

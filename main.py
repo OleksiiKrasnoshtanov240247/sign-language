@@ -1,6 +1,4 @@
-def main():
-    print("Hello from sign-language!")
-
+from src.cli_new import run_app
 
 if __name__ == "__main__":
-    main()
+    run_app()
