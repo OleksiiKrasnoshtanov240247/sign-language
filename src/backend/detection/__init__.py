@@ -1,5 +1,5 @@
-"""
-Detection module for sign language recognition.
+"""Detection module for sign language recognition.
+
 Handles hand capture, preprocessing, and sign classification.
 """
 from src.backend.detection.hand_capture import HandCapture, normalize
