@@ -29,6 +29,18 @@ const successMessage = document.getElementById('successMessage');
 const timeoutMessage = document.getElementById('timeoutMessage');
 const recordingProgress = document.getElementById('recordingProgress');
 
+// Sentence Mode Elements
+const practiceModeSelect = document.getElementById('practiceModeSelect');
+const singleLetterUI = document.getElementById('singleLetterUI');
+const sentenceUI = document.getElementById('sentenceUI');
+const targetSentenceInput = document.getElementById('targetSentenceInput');
+const setSentenceBtn = document.getElementById('setSentenceBtn');
+const targetSentenceDisplay = document.getElementById('targetSentenceDisplay');
+const recognizedSentenceDisplay = document.getElementById('recognizedSentenceDisplay');
+const clearSentenceBtn = document.getElementById('clearSentenceBtn');
+const sentenceModeTitle = document.getElementById('sentenceModeTitle');
+const modeSwitchContainer = document.getElementById('modeSwitchContainer');
+
 // State
 let currentMode = 'sequential';  // Track current mode
 let currentLanguage = 'en';  // Track current language
@@ -69,7 +81,14 @@ const translations = {
         'msg-correct-title': '✓ Correct!',
         'msg-correct-text': 'Moving to next letter...',
         'msg-timeout-title': 'Time\'s up!',
-        'msg-timeout-text': 'Moving to next letter...'
+        'msg-timeout-text': 'Moving to next letter...',
+        'label-practice-mode': 'Practice Mode',
+        'mode-letter-practice': 'Single Letters',
+        'mode-sentence-practice': 'Target Sentence',
+        'mode-free-practice': 'Free Sign',
+        'sentence-mode-title': 'Target Sentence',
+        'btn-set': 'Set',
+        'btn-clear': 'Clear Recognition'
     },
     nl: {
         'title': 'Gebarentaal Leren',
@@ -104,7 +123,14 @@ const translations = {
         'msg-correct-title': '✓ Correct!',
         'msg-correct-text': 'Naar volgende letter...',
         'msg-timeout-title': 'Tijd is op!',
-        'msg-timeout-text': 'Naar volgende letter...'
+        'msg-timeout-text': 'Naar volgende letter...',
+        'label-practice-mode': 'Oefenmodus',
+        'mode-letter-practice': 'Losse Letters',
+        'mode-sentence-practice': 'Doelzin',
+        'mode-free-practice': 'Vrij Gebaren',
+        'sentence-mode-title': 'Doelzin',
+        'btn-set': 'Stel in',
+        'btn-clear': 'Wis Herkenning'
     }
 };
 
@@ -134,12 +160,17 @@ function init() {
     
     // Initially disable buttons
     recordBtn.disabled = true;
-    if (modeCheckbox) {
-        modeCheckbox.disabled = true;
+    if (modeCheckbox) modeCheckbox.disabled = true;
+    if (practiceModeSelect) {
+        practiceModeSelect.disabled = true;
+        practiceModeSelect.addEventListener('change', togglePracticeMode);
     }
+    if (setSentenceBtn) setSentenceBtn.addEventListener('click', setTargetSentence);
+    if (clearSentenceBtn) clearSentenceBtn.addEventListener('click', clearRecognizedSentence);
     
     // Initialize displays
     updateModeToggle();
+    updateUIForMode(currentMode);
     updateLanguage();
     
     console.log('App initialized');
@@ -255,7 +286,81 @@ async function toggleMode() {
 function updateModeToggle() {
     if (modeCheckbox) {
         modeCheckbox.checked = (currentMode === 'random');
-        console.log('Mode toggle updated:', currentMode, 'checked:', modeCheckbox.checked);
+    }
+    updateUIForMode(currentMode);
+}
+
+// Sentence mode logic
+async function togglePracticeMode() {
+    if (!sessionId) return;
+    
+    let selectedMode = practiceModeSelect.value;
+    // Map 'letter' to sequential or random based on checkbox
+    const actualMode = selectedMode === 'letter' ? (modeCheckbox.checked ? 'random' : 'sequential') : selectedMode;
+    
+    try {
+        const response = await fetch(`/api/session/${sessionId}/mode`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: actualMode })
+        });
+        
+        if (response.ok) {
+            currentMode = actualMode;
+            updateUIForMode(selectedMode);
+            
+            // Set sentence blank for free mode
+            if (selectedMode === 'free') {
+                ws.send(JSON.stringify({ type: 'set_sentence', sentence: '', session_id: sessionId }));
+            }
+        }
+    } catch (error) {
+        console.error('Error changing practice mode:', error);
+    }
+}
+
+function setTargetSentence() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    const val = targetSentenceInput.value.trim();
+    ws.send(JSON.stringify({
+        type: 'set_sentence',
+        sentence: val,
+        session_id: sessionId
+    }));
+}
+
+function clearRecognizedSentence() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({
+        type: 'clear_sentence',
+        session_id: sessionId
+    }));
+}
+
+function updateUIForMode(modeStr) {
+    if (!practiceModeSelect) return;
+    
+    if (modeStr === 'sequential' || modeStr === 'random' || modeStr === 'letter') {
+        singleLetterUI.style.display = 'block';
+        sentenceUI.style.display = 'none';
+        modeSwitchContainer.style.display = 'flex';
+        practiceModeSelect.value = 'letter';
+    } else {
+        singleLetterUI.style.display = 'none';
+        sentenceUI.style.display = 'block';
+        modeSwitchContainer.style.display = 'none';
+        
+        if (modeStr === 'free') {
+            document.getElementById('sentenceInputGroup').style.display = 'none';
+            targetSentenceDisplay.style.display = 'none';
+            sentenceModeTitle.textContent = translations[currentLanguage]['mode-free-practice'];
+            practiceModeSelect.value = 'free';
+        } else {
+            document.getElementById('sentenceInputGroup').style.display = 'flex';
+            targetSentenceDisplay.style.display = 'block';
+            sentenceModeTitle.textContent = translations[currentLanguage]['mode-sentence-practice'];
+            practiceModeSelect.value = 'sentence';
+        }
     }
 }
 
@@ -299,7 +404,8 @@ async function startSession() {
         startBtn.disabled = true;
         recordBtn.disabled = false;
         skipBtn.disabled = false;
-        modeCheckbox.disabled = false;
+        if (modeCheckbox) modeCheckbox.disabled = false;
+        if (practiceModeSelect) practiceModeSelect.disabled = false;
         startBtn.textContent = translations[currentLanguage]['btn-running'];
         
         console.log('✅ Session started');
@@ -438,6 +544,34 @@ function handleServerResponse(data) {
         if (prog.mode && prog.mode !== currentMode) {
             currentMode = prog.mode;
             updateModeToggle();
+        }
+        
+        // Update Sentence Displays
+        if (prog.target_sentence !== undefined) {
+            targetSentenceDisplay.textContent = prog.target_sentence;
+        }
+        if (prog.recognized_sentence !== undefined) {
+            const tgt = prog.target_sentence || '';
+            const rec = prog.recognized_sentence || '';
+            
+            // Format recognizing target
+            if (tgt && prog.mode === 'sentence') {
+                let html = '';
+                for (let i = 0; i < tgt.length; i++) {
+                    if (tgt[i] === ' ') {
+                        html += '<span>&nbsp;</span>';
+                    } else if (i < rec.length) {
+                        html += `<span class="correct-char">${tgt[i]}</span>`;
+                    } else if (i === rec.length) {
+                        html += `<span class="current-target-char">${tgt[i]}</span>`;
+                    } else {
+                        html += `<span class="pending-char">${tgt[i]}</span>`;
+                    }
+                }
+                recognizedSentenceDisplay.innerHTML = html;
+            } else {
+                recognizedSentenceDisplay.textContent = rec;
+            }
         }
     }
     

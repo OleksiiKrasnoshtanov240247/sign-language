@@ -29,7 +29,7 @@ class DetectionResponse(BaseModel):
     hint_message: str = ""
     tutorial_url: Optional[str] = None
     progress: Dict
-    current_letter: str
+    current_letter: Optional[str] = None
     consecutive_matches: int
     matches_needed: int
 
@@ -37,17 +37,18 @@ class DetectionResponse(BaseModel):
 class SessionInfo(BaseModel):
     """Session information."""
     session_id: str
-    current_letter: str
+    current_letter: Optional[str] = None
     total_correct: int
     total_attempts: int
     accuracy: float
     completed_letters: list
-    mode: str = "sequential"  # "sequential" or "random"
-
+    mode: str = "sequential"  # "sequential", "random", or "sentence"
+    target_sentence: str = ""
+    recognized_sentence: str = ""
 
 class ModeChangeRequest(BaseModel):
     """Request to change letter sequence mode."""
-    mode: str  # "sequential" or "random"
+    mode: str  # "sequential", "random", or "sentence"
 
 
 class ErrorResponse(BaseModel):
