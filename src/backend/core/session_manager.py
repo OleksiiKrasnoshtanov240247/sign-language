@@ -343,8 +343,12 @@ class UserSession:
         """
         skipped_letter = self.current_letter
         
-        # Move to next letter
-        self.current_letter = self.letter_sequence.get_next_letter(self.current_letter)
+        # Advance according to the active mode.
+        if self.mode == "sentence" and self.target_sentence:
+            self.sentence_index += 1
+            self._advance_to_next_valid_char()
+        else:
+            self.current_letter = self.letter_sequence.get_next_letter(self.current_letter)
         self.letter_start_time = time.time()
         self.attempt_count = 0
         self.hints_shown = 0

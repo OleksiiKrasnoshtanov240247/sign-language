@@ -149,7 +149,8 @@ async def change_mode(session_id: str, request: ModeChangeRequest):
         return {
             "status": "success",
             "mode": session.mode,
-            "message": f"Mode changed to {request.mode}"
+            "message": f"Mode changed to {request.mode}",
+            "progress": session.get_progress()
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

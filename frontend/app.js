@@ -555,7 +555,7 @@ function handleServerResponse(data) {
             const rec = prog.recognized_sentence || '';
             
             // Format recognizing target
-            if (tgt && practiceModeSelect && practiceModeSelect.value === 'sentence') {
+            if (tgt && prog.mode === 'sentence') {
                 let html = '';
                 for (let i = 0; i < tgt.length; i++) {
                     if (tgt[i] === ' ') {
