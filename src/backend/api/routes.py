@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from src.backend.api.schemas import DetectionResponse, SessionInfo, ErrorResponse, ModeChangeRequest
 from src.backend.core.session_manager import SessionManager
@@ -110,7 +110,9 @@ async def create_session(mode: str = "sequential"):
         total_attempts=session.total_attempts,
         accuracy=progress["accuracy"],
         completed_letters=session.completed_letters,
-        mode=session.mode
+        mode=session.mode,
+        target_sentence=session.target_sentence,
+        recognized_sentence=session.recognized_sentence
     )
 
 
@@ -129,7 +131,9 @@ async def get_session_info(session_id: str):
         total_attempts=session.total_attempts,
         accuracy=progress["accuracy"],
         completed_letters=session.completed_letters,
-        mode=session.mode
+        mode=session.mode,
+        target_sentence=session.target_sentence,
+        recognized_sentence=session.recognized_sentence
     )
 
 
@@ -172,8 +176,10 @@ def decode_frame(frame_base64: str) -> np.ndarray:
     return frame
 
 
-def is_dynamic_letter(letter: str) -> bool:
+def is_dynamic_letter(letter: Optional[str]) -> bool:
     """Check if letter requires dynamic detection (LSTM)."""
+    if not letter:
+        return False
     return letter.upper() in DYNAMIC_LETTERS
 
 
@@ -261,6 +267,33 @@ async def websocket_endpoint(websocket: WebSocket):
                         "progress": session.get_progress()
                     }
                     await websocket.send_json(response)
+                continue
+                
+            elif message_type == "set_sentence":
+                target_sentence = data.get("sentence", "")
+                session.set_mode("sentence")
+                session.set_target_sentence(target_sentence)
+                
+                response = {
+                    "session_id": session.id,
+                    "mode": session.mode,
+                    "target_sentence": session.target_sentence,
+                    "recognized_sentence": session.recognized_sentence,
+                    "message": "Target sentence set" if target_sentence else "Free sign mode activated",
+                    "progress": session.get_progress()
+                }
+                await websocket.send_json(response)
+                continue
+                
+            elif message_type == "clear_sentence":
+                session.clear_recognized()
+                response = {
+                    "session_id": session.id,
+                    "recognized_sentence": session.recognized_sentence,
+                    "message": "Recognized sentence cleared",
+                    "progress": session.get_progress()
+                }
+                await websocket.send_json(response)
                 continue
             
             elif message_type == "skip":

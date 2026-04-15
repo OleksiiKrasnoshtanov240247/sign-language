@@ -48,6 +48,11 @@ class UserSession:
         self.show_hint = False
         self.hint_message = ""
         
+        # Sentence Mode state
+        self.target_sentence = ""
+        self.recognized_sentence = ""
+        self.sentence_index = 0
+        
     def start_recording(self):
         """Start a new recording attempt."""
         self.is_recording = True
@@ -126,14 +131,26 @@ class UserSession:
         print(f" Predictions: {dict(letter_counts)} | Winner: {most_common_letter} ({count}/{len(valid_predictions)})")
         
         # Check if it matches target
-        match = (most_common_letter == self.current_letter)
-        
-        if match:
-            return self._handle_success(most_common_letter, avg_confidence)
+        if self.mode == "sentence":
+            if self.target_sentence and self.current_letter:
+                match = (most_common_letter == self.current_letter)
+                if match:
+                    return self._handle_sentence_success(most_common_letter, avg_confidence)
+                else:
+                    return self._handle_failed_attempt(
+                        f"Detected '{most_common_letter}' instead of '{self.current_letter}'"
+                    )
+            else:
+                return self._handle_free_mode_success(most_common_letter, avg_confidence)
         else:
-            return self._handle_failed_attempt(
-                f"Detected '{most_common_letter}' instead of '{self.current_letter}'"
-            )
+            match = (most_common_letter == self.current_letter)
+            
+            if match:
+                return self._handle_success(most_common_letter, avg_confidence)
+            else:
+                return self._handle_failed_attempt(
+                    f"Detected '{most_common_letter}' instead of '{self.current_letter}'"
+                )
     
     def _handle_success(self, predicted_letter: str, confidence: float) -> Dict:
         """Handle successful letter recognition."""
@@ -213,6 +230,49 @@ class UserSession:
             'show_hint': False
         }
     
+    def _handle_sentence_success(self, predicted_letter: str, confidence: float) -> Dict:
+        self.total_correct += 1
+        self.recognized_sentence += predicted_letter
+        self.sentence_index += 1
+        
+        print(f" Success! Correctly signed '{predicted_letter}' (confidence: {confidence:.2f})")
+        
+        # Advance to next letter
+        self._advance_to_next_valid_char()
+        self.letter_start_time = time.time()
+        self.attempt_count = 0
+        self.hints_shown = 0
+        self.show_hint = False
+        
+        return {
+            'match': True,
+            'success': True,
+            'timeout': False,
+            'predicted_letter': predicted_letter,
+            'confidence': confidence,
+            'message': f'Correct! Next letter...',
+            'next_letter': self.current_letter,
+            'show_hint': False
+        }
+
+    def _handle_free_mode_success(self, predicted_letter: str, confidence: float) -> Dict:
+        self.recognized_sentence += predicted_letter
+        self.letter_start_time = time.time()
+        self.attempt_count = 0
+        
+        print(f" Free Mode: signed '{predicted_letter}' (confidence: {confidence:.2f})")
+        
+        return {
+            'match': True,
+            'success': True,
+            'timeout': False,
+            'predicted_letter': predicted_letter,
+            'confidence': confidence,
+            'message': f'Signed {predicted_letter}',
+            'next_letter': None,
+            'show_hint': False
+        }
+    
     def get_tutorial_url(self) -> Optional[str]:
         """Get tutorial GIF URL for current letter."""
         return self.tutorial_manager.get_tutorial_url(self.current_letter)
@@ -236,17 +296,43 @@ class UserSession:
             'time_remaining': self.get_time_remaining(),
             'tutorial_url': self.get_tutorial_url(),
             'is_recording': self.is_recording,
-            'mode': self.mode
+            'mode': self.mode,
+            'target_sentence': self.target_sentence,
+            'recognized_sentence': self.recognized_sentence
         }
     
     def set_mode(self, mode: str):
-        """Change letter sequence mode (sequential or random)."""
-        if mode not in ["sequential", "random"]:
-            raise ValueError(f"Invalid mode: {mode}. Must be 'sequential' or 'random'.")
+        """Change letter sequence mode (sequential, random, sentence)."""
+        if mode not in ["sequential", "random", "sentence"]:
+            raise ValueError(f"Invalid mode: {mode}. Must be 'sequential', 'random', or 'sentence'.")
         
         self.mode = mode
-        self.letter_sequence.mode = mode
+        if mode != "sentence":
+            self.letter_sequence.mode = mode
         print(f"📝 Mode changed to: {mode}")
+        
+    def set_target_sentence(self, sentence: str):
+        """Set a target sentence for sentence mode."""
+        self.target_sentence = sentence.upper()
+        self.recognized_sentence = ""
+        self.sentence_index = 0
+        if self.target_sentence:
+            self._advance_to_next_valid_char()
+            print(f"🎯 Target sentence set: '{self.target_sentence}'")
+        else:
+            self.current_letter = None
+            print("🆓 Free mode activated")
+            
+    def _advance_to_next_valid_char(self):
+        """Advance index past spaces."""
+        while self.sentence_index < len(self.target_sentence) and self.target_sentence[self.sentence_index] == ' ':
+            self.recognized_sentence += ' '
+            self.sentence_index += 1
+        
+        if self.sentence_index < len(self.target_sentence):
+            self.current_letter = self.target_sentence[self.sentence_index]
+        else:
+            self.current_letter = None  # Sentence complete
     
     def skip_letter(self) -> Dict:
         """
@@ -280,6 +366,16 @@ class UserSession:
             "next_letter": self.current_letter,
             "show_hint": False
         }
+        
+    def clear_recognized(self):
+        """Clear recognized letters in sentence mode."""
+        if self.mode == "sentence":
+            self.recognized_sentence = ""
+            self.sentence_index = 0
+            if self.target_sentence:
+                self._advance_to_next_valid_char()
+            else:
+                self.current_letter = None
     
     def reset(self):
         """Reset session to beginning."""
@@ -294,6 +390,9 @@ class UserSession:
         self.total_attempts = 0
         self.completed_letters = []
         self.is_active = True
+        self.target_sentence = ""
+        self.recognized_sentence = ""
+        self.sentence_index = 0
 
 
 class SessionManager:

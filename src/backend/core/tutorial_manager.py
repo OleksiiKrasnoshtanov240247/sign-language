@@ -24,16 +24,22 @@ class TutorialManager:
                     available[letter] = gif_file
         return available
     
-    def has_tutorial(self, letter: str) -> bool:
+    def has_tutorial(self, letter: Optional[str]) -> bool:
         """Check if tutorial GIF exists for letter."""
+        if not letter:
+            return False
         return letter.upper() in self.available_gifs
     
-    def get_tutorial_path(self, letter: str) -> Optional[Path]:
+    def get_tutorial_path(self, letter: Optional[str]) -> Optional[Path]:
         """Get path to tutorial GIF for letter."""
+        if not letter:
+            return None
         return self.available_gifs.get(letter.upper())
     
-    def get_tutorial_url(self, letter: str) -> Optional[str]:
+    def get_tutorial_url(self, letter: Optional[str]) -> Optional[str]:
         """Get relative URL for tutorial GIF."""
+        if not letter:
+            return None
         if self.has_tutorial(letter):
             return f"/assets/{letter.upper()}.gif"
         return None
@@ -57,7 +63,7 @@ class TutorialManager:
         thresholds = [5, 10, 15]
         return attempt_count in thresholds
     
-    def get_hint_message(self, letter: str, hint_number: int) -> str:
+    def get_hint_message(self, letter: Optional[str], hint_number: int) -> str:
         """
         Get encouragement message for hint.
         
@@ -68,6 +74,9 @@ class TutorialManager:
         Returns:
             Hint message
         """
+        if not letter:
+            return ""
+            
         messages = {
             1: f"Need help with '{letter}'? Check the example on the side.",
             2: f"Keep trying! Make sure your hand matches the '{letter}' shape exactly.",
